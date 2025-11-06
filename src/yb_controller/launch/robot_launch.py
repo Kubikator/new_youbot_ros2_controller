@@ -1,0 +1,79 @@
+import os
+import launch
+from launch import LaunchDescription
+from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
+from webots_ros2_driver.webots_launcher import WebotsLauncher
+from webots_ros2_driver.webots_controller import WebotsController
+
+def generate_launch_description():
+    pkg_dir = get_package_share_directory('yb_controller')
+    robot_description_path = os.path.join(pkg_dir, 'resource', 'youbot.urdf')
+
+    webots = WebotsLauncher(
+        world=os.path.join(pkg_dir, 'worlds', 'youbot_labirinth.wbt'),
+        ros2_supervisor=True,
+    )
+    
+    my_robot_driver = WebotsController(
+        robot_name='my_robot',
+        parameters=[
+            {'robot_description': robot_description_path},
+            {'use_sim_time': True},
+        ],
+        respawn=True
+    )
+
+    laser_tf = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='laser_tf',
+        arguments=['0.28', '0', '0', '0', '0', '0', 'base_link', 'laser_frame'],
+        parameters=[{'use_sim_time': True}],
+    )
+
+    mnp_tf = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='mnp_tf',
+        arguments=['0.16', '0', '-0.109', '0', '0', '0', 'base_link', 'mnp_link'],
+        parameters=[{'use_sim_time': True}],
+    )
+
+    camera_tf = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='camera_tf',
+        arguments=['0.28', '0', '0.05', '0', '0', '0', 'base_link', 'camera_link'],
+        parameters=[{'use_sim_time': True}],
+    )
+
+    camera_1_tf = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='camera_1_tf',
+        arguments=['0.28', '-0.1', '0.05', '0.1', '0', '0', 'base_link', 'camera_1_link'],
+        parameters=[{'use_sim_time': True}],
+    )
+
+    odometry_publisher = Node(
+        package='yb_controller',
+        executable='yb_odometry',
+        parameters=[{'use_sim_time': True}],
+    )
+    return LaunchDescription([
+        webots,
+        webots._supervisor,
+        laser_tf,
+        mnp_tf,
+        camera_tf,
+        camera_1_tf,
+        my_robot_driver,
+        odometry_publisher,
+        launch.actions.RegisterEventHandler(
+            event_handler=launch.event_handlers.OnProcessExit(
+                target_action=webots,
+                on_exit=[launch.actions.EmitEvent(event=launch.events.Shutdown())],
+            ),
+        ),
+    ])

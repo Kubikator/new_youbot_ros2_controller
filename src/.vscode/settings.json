@@ -1,0 +1,14 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/egor/new_youbot_ros2_ws/install/yb_interfaces/local/lib/python3.10/dist-packages",
+        "/home/egor/new_youbot_ros2_ws/install/yb_controller/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/egor/new_youbot_ros2_ws/install/yb_interfaces/local/lib/python3.10/dist-packages",
+        "/home/egor/new_youbot_ros2_ws/install/yb_controller/lib/python3.10/site-packages",
+        "/opt/ros/humble/lib/python3.10/site-packages",
+        "/opt/ros/humble/local/lib/python3.10/dist-packages"
+    ]
+}

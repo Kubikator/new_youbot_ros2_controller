@@ -1,0 +1,2 @@
+geometry_msgs/Vector3 center
+string class_name

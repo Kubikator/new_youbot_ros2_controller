@@ -1,0 +1,30 @@
+# ROS 2
+build/
+install/
+log/
+src/CMakeLists.txt
+
+# Webots
+*.cache/
+*.wbproj
+*.bak
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Логи
+*.log
+*.tmp
+
+# Веса
+best.pt
+
