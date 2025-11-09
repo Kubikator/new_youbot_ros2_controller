@@ -155,11 +155,6 @@ class CoordinateFinder(Node):
                 obj_center.class_name = class_name
                 
                 result_msg.centers.append(obj_center)
-                
-                self.get_logger().info(
-                    f'Triangulated object "{class_name}" at: '
-                    f'x={object_3d[0]:.3f}, y={object_3d[1]:.3f}, z={object_3d[2]:.3f}'
-                )
             
             # Публикуем результаты (пустой или с данными)
             self.points_publisher.publish(result_msg)

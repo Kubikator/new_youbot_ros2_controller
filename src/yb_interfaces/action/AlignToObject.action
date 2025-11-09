@@ -1,0 +1,9 @@
+# Goal
+string object_type
+---
+# Result
+bool success
+---
+# Feedback
+float32 alignment_error
+bool object_visible

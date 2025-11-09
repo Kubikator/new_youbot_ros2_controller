@@ -39,6 +39,10 @@ setup(
             'gripper_controller_node = yb_controller.nodes.gripper_controller_node:main',
             'detection_node = yb_controller.detection.detection_node:main',
             'coordinate_finder_node = yb_controller.triangulation.coordinate_finder_node:main',
+            'searching_actionServer = yb_controller.actions.searching_actionServer:main',
+            'alignment_actionServer = yb_controller.actions.alignment_actionServer:main',
+            'closing_actionServer = yb_controller.actions.closing_actionServer:main',
+            'smach_node = yb_controller.smach.smach_node:main',
         ],
     },
 )

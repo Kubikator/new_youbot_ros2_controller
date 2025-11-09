@@ -86,6 +86,51 @@ def generate_launch_description():
         ]
     )
 
+    searching_action = TimerAction(
+        period=4.0,
+        actions=[
+            Node(
+                package='yb_controller',
+                executable='searching_actionServer',
+                name='searching_actionServer',
+                output='screen',
+                parameters=[
+                    {'use_sim_time': True}
+                ]
+            )
+        ]
+    )
+
+    align_action = TimerAction(
+        period=4.0,
+        actions=[
+            Node(
+                package='yb_controller',
+                executable='alignment_actionServer',
+                name='alignment_actionServer',
+                output='screen',
+                parameters=[
+                    {'use_sim_time': True}
+                ]
+            )
+        ]
+    )
+
+    closing_action = TimerAction(
+        period=4.0,
+        actions=[
+            Node(
+                package='yb_controller',
+                executable='closing_actionServer',
+                name='closing_actionServer',
+                output='screen',
+                parameters=[
+                    {'use_sim_time': True}
+                ]
+            )
+        ]
+    )
+
     return LaunchDescription([
         # Сразу запускаем
         robot_launch,
@@ -94,4 +139,7 @@ def generate_launch_description():
         detection_node,
         detection_1_node,
         coordinate_finder_node,
+        searching_action,
+        align_action,
+        closing_action,
     ])

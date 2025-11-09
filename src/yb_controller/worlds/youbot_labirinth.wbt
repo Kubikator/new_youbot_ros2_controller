@@ -43,8 +43,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.2310566489715414 0.000981051365115955 -0.9729398041524774 2.9951375415996786
-  position 1.4743147504848797 0.08698867779128536 0.6076586891494543
+  orientation -0.4459047159350177 0.4471729868619596 0.7753742993728029 1.8892901305744307
+  position -0.33620067553837 -0.5476591987836592 4.053075119514155
   follow "youBot"
 }
 TexturedBackground {
@@ -59,7 +59,7 @@ Apple {
   scale 0.4
 }
 WoodenBox {
-  translation -2.99455 -7.75878 0
+  translation -0.65455 1.94122 0
   rotation 0 0 1 -1.5707963267948966
   name "wooden box(1)"
   size 0.6 0.6 0.2
@@ -199,7 +199,7 @@ Wall {
   size 0.1 15 1
 }
 DEF YellowCube Solid {
-  translation -3.2 -7.76 0.025
+  translation -6.87 4.72 0.245
   children [
     Shape {
       appearance PBRAppearance {
@@ -225,7 +225,7 @@ DEF YellowCube Solid {
   ]
 }
 Ball {
-  translation 6.87 -4.99 0.1225
+  translation -0.45 1.74 0.1225
   color 0.3 0.48 1
   radius 0.02
 }

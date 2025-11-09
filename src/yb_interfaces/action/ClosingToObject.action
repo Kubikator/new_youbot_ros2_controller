@@ -1,0 +1,10 @@
+# Goal
+string object_type
+---
+# Result
+bool success
+string problem
+---
+# Feedback
+float32 current_distance
+bool object_visible
