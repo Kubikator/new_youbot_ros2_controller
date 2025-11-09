@@ -1,8 +1,0 @@
-# Goal
-string object_type
----
-# Result
-bool success
----
-# Feedback
-int32 objects_in_view

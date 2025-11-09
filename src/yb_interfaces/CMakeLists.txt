@@ -18,9 +18,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/BoundingBoxArray.msg"
   "msg/ObjectCenter3.msg"
   "msg/ObjectCenter3Array.msg"
-  "action/SearchObject.action"
-  "action/AlignToObject.action"
-  "action/ClosingToObject.action"
+  "action/PickupObject.action"
   DEPENDENCIES geometry_msgs std_msgs
 )
 
