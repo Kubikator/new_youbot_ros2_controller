@@ -36,7 +36,7 @@ class AlignToObjectState(smach.State):
         
         # Публикуем feedback
         feedback_msg = PickupObject.Feedback()
-        feedback_msg.current_state = '[1/6] ALIGNING_TO_OBJECT'
+        feedback_msg.current_state = '[2/8] ALIGNING_TO_OBJECT'
         feedback_msg.status_message = f'Выравнивание по объекту {object_name}...'
         feedback_msg.current_x = self.node.current_position['x']
         feedback_msg.current_y = self.node.current_position['y']

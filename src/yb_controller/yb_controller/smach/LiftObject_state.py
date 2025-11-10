@@ -33,7 +33,7 @@ class LiftObjectState(smach.State):
         
         # Публикуем feedback
         feedback_msg = PickupObject.Feedback()
-        feedback_msg.current_state = '[4/4] LIFTING_OBJECT'
+        feedback_msg.current_state = '[7/8] LIFTING_OBJECT'
         feedback_msg.status_message = f'Подъём объекта {object_name}...'
         feedback_msg.current_x = self.node.current_position['x']
         feedback_msg.current_y = self.node.current_position['y']

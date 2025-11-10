@@ -33,7 +33,7 @@ class MovingGripperState(smach.State):
         
         # Публикуем feedback
         feedback_msg = PickupObject.Feedback()
-        feedback_msg.current_state = '[2/4] MOVING_TO_TARGET'
+        feedback_msg.current_state = '[5/8] MOVING_TO_TARGET'
         feedback_msg.status_message = f'Движение манипулятора к объекту {object_name}...'
         feedback_msg.current_x = self.node.current_position['x']
         feedback_msg.current_y = self.node.current_position['y']

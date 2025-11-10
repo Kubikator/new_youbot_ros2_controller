@@ -33,7 +33,7 @@ class CloseGripperState(smach.State):
         
         # Публикуем feedback
         feedback_msg = PickupObject.Feedback()
-        feedback_msg.current_state = '[3/4] CLOSING_GRIPPER'
+        feedback_msg.current_state = '[6/8] CLOSING_GRIPPER'
         feedback_msg.status_message = f'Закрытие захвата для захвата объекта {object_name}...'
         feedback_msg.current_x = self.node.current_position['x']
         feedback_msg.current_y = self.node.current_position['y']

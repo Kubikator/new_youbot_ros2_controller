@@ -19,6 +19,7 @@ from yb_controller.smach.openGripper_state import OpenGripperState
 from yb_controller.smach.moveGripper_state import MovingGripperState
 from yb_controller.smach.closeGripper_state import CloseGripperState
 from yb_controller.smach.LiftObject_state import LiftObjectState
+from yb_controller.smach.verifyGrasp_state import VerifyGraspState
 
 class PickupActionNode(Node):
     """Главная нода для управления действием захвата объекта"""
@@ -179,9 +180,19 @@ class PickupActionNode(Node):
                 'LIFTING_OBJECT',
                 LiftObjectState(self),
                 transitions={
-                    'lifted': 'success',
+                    'lifted': 'VERIFY_GRASP',
                     'lifting': 'LIFTING_OBJECT',
                     'failure': 'failure',
+                    'preempted': 'preempted'
+                }
+            )
+
+            smach.StateMachine.add(
+                'VERIFY_GRASP',
+                VerifyGraspState(self),
+                transitions={
+                    'grasped': 'success',
+                    'not_grasped': 'OPENING_GRIPPER',
                     'preempted': 'preempted'
                 }
             )

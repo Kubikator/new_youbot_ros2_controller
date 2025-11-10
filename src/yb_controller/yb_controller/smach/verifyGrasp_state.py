@@ -12,13 +12,12 @@ import smach
 import smach_ros
 from geometry_msgs.msg import Pose, Point, Twist
 
-class SearchObjectState(smach.State):
-    """Состояние: поиск объекта (вращение на месте)"""
+class VerifyGraspState(smach.State):
     
     def __init__(self, node):
         smach.State.__init__(
             self,
-            outcomes=['found', 'searching', 'failure', 'preempted'],
+            outcomes=['grasped', 'not_grasped', 'preempted'],
             input_keys=['object_name'],
             output_keys=[]
         )
@@ -36,8 +35,8 @@ class SearchObjectState(smach.State):
         
         # Публикуем feedback
         feedback_msg = PickupObject.Feedback()
-        feedback_msg.current_state = '[1/8] SEARCHING_OBJECT'
-        feedback_msg.status_message = f'Поиск объекта {object_name}...'
+        feedback_msg.current_state = '[8/8] VERIFY_GRASP'
+        feedback_msg.status_message = f'Верификация захвата {object_name}...'
         feedback_msg.current_x = self.node.current_position['x']
         feedback_msg.current_y = self.node.current_position['y']
         feedback_msg.current_z = self.node.current_position['z']
@@ -54,34 +53,7 @@ class SearchObjectState(smach.State):
                 break
         
         if object_visible:
-            # Объект найден - останавливаем робота
-            self._stop_robot(self.node)
-            self.node.get_logger().info('✓ Поиск завершён успешно')
-            return 'found'
+            return 'not_grasped'
+        else:
+            return 'grasped'
         
-        # Крутим робота на месте
-        twist_msg = Twist()
-        twist_msg.linear.x = 0.0
-        twist_msg.linear.y = 0.0
-        twist_msg.linear.z = 0.0
-        twist_msg.angular.x = 0.0
-        twist_msg.angular.y = 0.0
-        twist_msg.angular.z = self.node.SEARCH_ANGULAR_VELOCITY  # Вращение против часовой стрелки
-        
-        self.node.cmd_vel_publisher.publish(twist_msg)
-        
-        # Даём время на обработку
-        rclpy.spin_once(self.node, timeout_sec=0.1)
-        
-        return 'searching'
-    
-    def _stop_robot(self, node):
-        """Останавливает робота"""
-        twist_msg = Twist()
-        twist_msg.linear.x = 0.0
-        twist_msg.linear.y = 0.0
-        twist_msg.linear.z = 0.0
-        twist_msg.angular.x = 0.0
-        twist_msg.angular.y = 0.0
-        twist_msg.angular.z = 0.0
-        node.cmd_vel_publisher.publish(twist_msg)
