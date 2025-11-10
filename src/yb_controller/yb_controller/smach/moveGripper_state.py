@@ -67,7 +67,7 @@ class MovingGripperState(smach.State):
         obj_z_arm = obj_z_base - self.node.ARM_LINK_OFFSET['z']
         
         # Вычисляем целевую позицию
-        target_x = obj_x_arm * 1.05
+        target_x = obj_x_arm
         target_y = obj_y_arm
         target_z = obj_z_arm
         

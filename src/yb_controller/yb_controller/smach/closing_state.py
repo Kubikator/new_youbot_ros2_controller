@@ -11,98 +11,166 @@ import math
 import smach
 import smach_ros
 from geometry_msgs.msg import Pose, Point, Twist
+from tf2_ros.buffer import Buffer
+from tf2_ros.transform_listener import TransformListener
+import tf2_geometry_msgs
 
 class ClosingState(smach.State):
-    """Состояние: выравнивание робота по объекту"""
+    """Состояние: сближение с целевым объектом до расстояния ~0.3м в системе mnp_link"""
     
     def __init__(self, node):
         smach.State.__init__(
             self,
-            outcomes=['aligned', 'aligning', 'lost', 'failure', 'preempted'],
+            outcomes=['closed', 'closing', 'lost', 'align', 'failure', 'preempted'],
             input_keys=['object_name'],
             output_keys=[]
         )
-        self._miss_counter = 0
-        self._max_misses = 10  # Если объект пропал 10 раз подряд - возврат к поиску
         self.node = node
+        self._miss_counter = 0
+        self._max_misses = 30  # Максимальное число кадров без объекта
+        self._consecutive_success_frames = 0
+        self._required_success_frames = 5  # Требуется N кадров на целевом расстоянии
+        
+        # Параметры управления
+        self.target_distance = 0.3  # Целевое расстояние в системе mnp_link (метры)
+        self.distance_tolerance = 0.05  # Допуск расстояния
+        self.kp = 0.5  # Коэффициент P-регулятора
+        self.min_speed = 0.05  # Минимальная скорость
+        self.max_speed = 0.2  # Максимальная скорость
     
     def execute(self, userdata):
         object_name = userdata.object_name
         
         # Проверка на отмену
         if self.node.goal_handle.is_cancel_requested:
-            self._stop_robot(self.node)
+            self._stop_robot()
             return 'preempted'
         
         # Публикуем feedback
         feedback_msg = PickupObject.Feedback()
-        feedback_msg.current_state = '[2/8] ALIGNING_TO_OBJECT'
-        feedback_msg.status_message = f'Выравнивание по объекту {object_name}...'
+        feedback_msg.current_state = '[3/8] APPROACHING_OBJECT'
+        feedback_msg.status_message = f'Сближение с объектом {object_name}...'
         feedback_msg.current_x = self.node.current_position['x']
         feedback_msg.current_y = self.node.current_position['y']
         feedback_msg.current_z = self.node.current_position['z']
         self.node.goal_handle.publish_feedback(feedback_msg)
         
-        # Ищем объект в detected_objects
-        target_bbox = None
-        for bbox in self.node.detected_objects:
-            if bbox.class_name.lower() == object_name.lower():
-                target_bbox = bbox
+        # Ищем объект в objects_centers
+        object_found = False
+        obj_x_base = 0.0
+        obj_y_base = 0.0
+        obj_z_base = 0.0
+        
+        for center in self.node.objects_centers:
+            if center.class_name.lower() == object_name.lower():
+                obj_x_base = center.center.x
+                obj_y_base = center.center.y
+                obj_z_base = center.center.z
+                object_found = True
                 break
         
         # Объект не найден
-        if target_bbox is None:
+        if not object_found:
             self._miss_counter += 1
             if self._miss_counter >= self._max_misses:
                 self.node.get_logger().warn(
-                    f'⚠ Объект {object_name} потерян (пропусков: {self._miss_counter}). '
-                    f'Возврат к поиску'
+                    f'⚠ Объект {object_name} потерян (пропусков: {self._miss_counter})'
                 )
-                self._stop_robot(self.node)
+                self._stop_robot()
                 self._miss_counter = 0
                 return 'lost'
             
-            # Продолжаем медленно вращаться
-            twist_msg = Twist()
-            twist_msg.angular.z = self.node.ALIGN_ANGULAR_VELOCITY
-            self.node.cmd_vel_publisher.publish(twist_msg)
             rclpy.spin_once(self.node, timeout_sec=0.1)
-            return 'aligning'
+            return 'closing'
         
         # Объект найден - сбрасываем счётчик пропусков
         self._miss_counter = 0
         
-        # Вычисляем отклонение от центра
-        center_x = target_bbox.center_x
-        error = center_x - self.node.TARGET_CENTER_X
-        
-        # Проверяем выравнивание
-        if abs(error) < self.node.ALIGN_TOLERANCE:
+        try:
+            # Трансформируем координаты из base_link в mnp_link
+            obj_x_mnp = obj_x_base - self.node.ARM_LINK_OFFSET['x']
+            obj_y_mnp = obj_y_base - self.node.ARM_LINK_OFFSET['y']
+            obj_z_mnp = obj_z_base - self.node.ARM_LINK_OFFSET['z']
+            
+            # Текущее расстояние до объекта в системе mnp_link (координата X)
+            current_distance = obj_x_mnp
+            
+            # Вычисляем ошибку расстояния
+            distance_error = current_distance - self.target_distance
+            
             self.node.get_logger().info(
-                f'✓ Выравнивание завершено! center_x={center_x:.0f}, '
-                f'отклонение={error:.0f}px'
+                f'Сближение: расстояние={current_distance:.3f}м, '
+                f'цель={self.target_distance}м, ошибка={distance_error:.3f}м, '
+                f'Y={obj_y_mnp:.3f}м'
             )
-            self._stop_robot(self.node)
-            return 'aligned'
-        
-        # Вращаем робота для выравнивания
-        # Если объект слева (error < 0), крутим влево (положительная angular.z)
-        # Если объект справа (error > 0), крутим вправо (отрицательная angular.z)
-        angular_velocity = -self.node.ALIGN_ANGULAR_VELOCITY if error > 0 else self.node.ALIGN_ANGULAR_VELOCITY
-        
-        twist_msg = Twist()
-        twist_msg.angular.z = angular_velocity
-        self.node.cmd_vel_publisher.publish(twist_msg)
-        
-        self.node.get_logger().info(
-            f'Выравнивание: center_x={center_x:.0f}, цель={self.node.TARGET_CENTER_X}, '
-            f'ошибка={error:.0f}px'
-        )
-        
-        rclpy.spin_once(self.node, timeout_sec=0.1)
-        return 'aligning'
+            
+            # Проверяем достижение целевого расстояния
+            if abs(distance_error) <= self.distance_tolerance:
+                self._consecutive_success_frames += 1
+                
+                self.node.get_logger().info(
+                    f'Целевое расстояние! ({self._consecutive_success_frames}/{self._required_success_frames})'
+                )
+                
+                if self._consecutive_success_frames >= self._required_success_frames:
+                    self.node.get_logger().info(
+                        f'✓ Сближение завершено! Расстояние: {current_distance:.3f}м'
+                    )
+                    self._stop_robot()
+                    self._consecutive_success_frames = 0
+                    return 'closed'
+                
+                self._stop_robot()
+                rclpy.spin_once(self.node, timeout_sec=0.1)
+                return 'closing'
+            
+            # Сбрасываем счетчик успешных кадров при движении
+            self._consecutive_success_frames = 0
+            
+            # Проверка на потерю выравнивания (координата Y в mnp_link)
+            if abs(obj_y_mnp) > 0.1:
+                self.node.get_logger().warn(
+                    f'⚠ Потеряно выравнивание! Y={obj_y_mnp:.3f}м'
+                )
+                self._stop_robot()
+                return 'align'
+            
+            # Проверка: объект слишком близко?
+            if distance_error < -0.1:  # На 10см ближе чем нужно
+                self.node.get_logger().warn(
+                    f'⚠ Слишком близко! Расстояние: {current_distance:.3f}м, требуется отъезд'
+                )
+                self._stop_robot()
+                return 'failure'
+            
+            # Управление движением с помощью P-регулятора
+            linear_velocity = self.kp * distance_error
+            
+            # Обеспечиваем минимальную скорость для преодоления трения
+            if linear_velocity > 0 and linear_velocity < self.min_speed:
+                linear_velocity = self.min_speed
+            
+            # Ограничиваем максимальную скорость
+            linear_velocity = max(-self.max_speed, min(self.max_speed, linear_velocity))
+            
+            # Если слишком медленно движемся к цели, увеличиваем скорость
+            if 0 < linear_velocity < self.min_speed:
+                linear_velocity = self.min_speed
+            
+            # Публикуем команду движения
+            twist_msg = Twist()
+            twist_msg.linear.x = linear_velocity
+            self.node.cmd_vel_publisher.publish(twist_msg)
+            
+            rclpy.spin_once(self.node, timeout_sec=0.1)
+            return 'closing'
+            
+        except Exception as e:
+            self.node.get_logger().error(f'Ошибка при сближении: {e}')
+            self._stop_robot()
+            return 'failure'
     
-    def _stop_robot(self, node):
+    def _stop_robot(self):
         """Останавливает робота"""
         twist_msg = Twist()
-        node.cmd_vel_publisher.publish(twist_msg)
+        self.node.cmd_vel_publisher.publish(twist_msg)

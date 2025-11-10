@@ -15,6 +15,7 @@ import smach_ros
 from geometry_msgs.msg import Pose, Point, Twist
 from yb_controller.smach.searching_state import SearchObjectState
 from yb_controller.smach.align_state import AlignToObjectState
+from yb_controller.smach.closing_state import ClosingState
 from yb_controller.smach.openGripper_state import OpenGripperState
 from yb_controller.smach.moveGripper_state import MovingGripperState
 from yb_controller.smach.closeGripper_state import CloseGripperState
@@ -135,9 +136,22 @@ class PickupActionNode(Node):
                 'ALIGNING_TO_OBJECT',
                 AlignToObjectState(self),
                 transitions={
-                    'aligned': 'OPENING_GRIPPER',
+                    'aligned': 'CLOSING_OBJECT',
                     'aligning': 'ALIGNING_TO_OBJECT',
                     'lost': 'SEARCHING_OBJECT',
+                    'failure': 'failure',
+                    'preempted': 'preempted'
+                }
+            )
+
+            smach.StateMachine.add(
+                'CLOSING_OBJECT',
+                ClosingState(self),
+                transitions={
+                    'closed': 'OPENING_GRIPPER',
+                    'closing': 'CLOSING_OBJECT',
+                    'lost': 'SEARCHING_OBJECT',
+                    'align': 'ALIGNING_TO_OBJECT',
                     'failure': 'failure',
                     'preempted': 'preempted'
                 }
