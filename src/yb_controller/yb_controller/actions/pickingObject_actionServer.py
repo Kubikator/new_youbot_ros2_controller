@@ -17,6 +17,7 @@ from yb_controller.smach.searching_state import SearchObjectState
 from yb_controller.smach.align_state import AlignToObjectState
 from yb_controller.smach.closing_state import ClosingState
 from yb_controller.smach.openGripper_state import OpenGripperState
+from yb_controller.smach.movePreGrap_state import MovingPreGrapState
 from yb_controller.smach.moveGripper_state import MovingGripperState
 from yb_controller.smach.closeGripper_state import CloseGripperState
 from yb_controller.smach.LiftObject_state import LiftObjectState
@@ -85,7 +86,7 @@ class PickupActionNode(Node):
         )
 
         self.GRIPPER_OPEN_GAP = 0.071
-        self.GRIPPER_CLOSED_GAP = 0.04
+        self.GRIPPER_CLOSED_GAP = 0.0
         self.POSITION_TOLERANCE = 0.02
         self.GRIPPER_TOLERANCE = 0.005
         self.SEARCH_ANGULAR_VELOCITY = 0.3  # рад/с для поиска объекта
@@ -161,8 +162,19 @@ class PickupActionNode(Node):
                 'OPENING_GRIPPER',
                 OpenGripperState(self),
                 transitions={
-                    'opened': 'MOVING_TO_TARGET',
+                    'opened': 'MOVING_TO_PREGRAP',
                     'waiting': 'OPENING_GRIPPER',
+                    'failure': 'failure',
+                    'preempted': 'preempted'
+                }
+            )
+
+            smach.StateMachine.add(
+                'MOVING_TO_PREGRAP',
+                MovingPreGrapState(self),
+                transitions={
+                    'reached': 'MOVING_TO_TARGET',
+                    'moving': 'MOVING_TO_PREGRAP',
                     'failure': 'failure',
                     'preempted': 'preempted'
                 }

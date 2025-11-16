@@ -11,8 +11,7 @@ import math
 import smach
 import smach_ros
 
-class MovingGripperState(smach.State):
-    """Состояние: движение к объекту"""
+class MovingPreGrapState(smach.State):
     
     def __init__(self, node):
         smach.State.__init__(
@@ -33,8 +32,8 @@ class MovingGripperState(smach.State):
         
         # Публикуем feedback
         feedback_msg = PickupObject.Feedback()
-        feedback_msg.current_state = '[6/9] MOVING_TO_TARGET'
-        feedback_msg.status_message = f'Движение манипулятора к объекту {object_name}...'
+        feedback_msg.current_state = '[5/9] MOVING_TO_PRE_GRAP'
+        feedback_msg.status_message = f'Движение манипулятора к точке предзахвата {object_name}...'
         feedback_msg.current_x = self.node.current_position['x']
         feedback_msg.current_y = self.node.current_position['y']
         feedback_msg.current_z = self.node.current_position['z']
@@ -72,7 +71,7 @@ class MovingGripperState(smach.State):
         # Вычисляем целевую позицию
         target_x = obj_x_arm
         target_y = obj_y_arm
-        target_z = obj_z_arm * 1.05
+        target_z = obj_z_arm + 0.05
         
         self.node.get_logger().info(
             f'Целевая позиция манипулятора: '

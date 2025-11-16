@@ -86,6 +86,21 @@ def generate_launch_description():
         ]
     )
 
+    objects_localizator = TimerAction(
+        period=4.0,
+        actions=[
+            Node(
+                package='yb_controller',
+                executable='objects_finder',
+                name='objects_finder',
+                output='screen',
+                parameters=[
+                    {'use_sim_time': True}
+                ]
+            )
+        ]
+    ) 
+
     pickinkObject = TimerAction(
         period=4.0,
         actions=[
@@ -109,5 +124,6 @@ def generate_launch_description():
         detection_node,
         detection_1_node,
         coordinate_finder_node,
+        objects_localizator,
         pickinkObject,
     ])

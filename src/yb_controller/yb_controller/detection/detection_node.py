@@ -153,14 +153,6 @@ class DetectionNode(Node):
                 max_time = np.max(self.inference_times)
                 fps = 1000 / avg_time
                 
-                self.get_logger().info(
-                    f'Frame #{self.frame_count} | '
-                    f'Avg: {avg_time:.1f}ms | '
-                    f'Min: {min_time:.1f}ms | '
-                    f'Max: {max_time:.1f}ms | '
-                    f'FPS: {fps:.1f} | '
-                    f'Objects: {len(bbox_array.boxes)}'
-                )
                 self.inference_times = []
 
         except Exception as e:

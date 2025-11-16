@@ -33,7 +33,7 @@ class OpenGripperState(smach.State):
         
         # Публикуем feedback
         feedback_msg = PickupObject.Feedback()
-        feedback_msg.current_state = '[4/8] OPENING_GRIPPER'
+        feedback_msg.current_state = '[4/9] OPENING_GRIPPER'
         feedback_msg.status_message = f'Проверка видимости объекта {object_name}...'
         feedback_msg.current_x = self.node.current_position['x']
         feedback_msg.current_y = self.node.current_position['y']

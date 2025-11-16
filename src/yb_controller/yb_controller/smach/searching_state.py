@@ -36,7 +36,7 @@ class SearchObjectState(smach.State):
         
         # Публикуем feedback
         feedback_msg = PickupObject.Feedback()
-        feedback_msg.current_state = '[1/8] SEARCHING_OBJECT'
+        feedback_msg.current_state = '[1/9] SEARCHING_OBJECT'
         feedback_msg.status_message = f'Поиск объекта {object_name}...'
         feedback_msg.current_x = self.node.current_position['x']
         feedback_msg.current_y = self.node.current_position['y']

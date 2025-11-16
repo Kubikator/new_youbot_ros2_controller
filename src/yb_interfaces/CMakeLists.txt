@@ -19,6 +19,8 @@ rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/ObjectCenter3.msg"
   "msg/ObjectCenter3Array.msg"
   "action/PickupObject.action"
+  "msg/LocalizedObject.msg"
+  "msg/LocalizedObjectArray.msg"
   DEPENDENCIES geometry_msgs std_msgs
 )
 

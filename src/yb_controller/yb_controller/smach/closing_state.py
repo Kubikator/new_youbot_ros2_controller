@@ -16,7 +16,7 @@ from tf2_ros.transform_listener import TransformListener
 import tf2_geometry_msgs
 
 class ClosingState(smach.State):
-    """Состояние: сближение с целевым объектом до расстояния ~0.3м в системе mnp_link"""
+    """Состояние: сближение с целевым объектом до расстояния ~0.4м в системе mnp_link"""
     
     def __init__(self, node):
         smach.State.__init__(
@@ -32,11 +32,11 @@ class ClosingState(smach.State):
         self._required_success_frames = 5  # Требуется N кадров на целевом расстоянии
         
         # Параметры управления
-        self.target_distance = 0.3  # Целевое расстояние в системе mnp_link (метры)
+        self.target_distance = 0.35  # Целевое расстояние в системе mnp_link (метры)
         self.distance_tolerance = 0.05  # Допуск расстояния
         self.kp = 0.5  # Коэффициент P-регулятора
-        self.min_speed = 0.05  # Минимальная скорость
-        self.max_speed = 0.2  # Максимальная скорость
+        self.min_speed = 0.01  # Минимальная скорость
+        self.max_speed = 0.1  # Максимальная скорость
     
     def execute(self, userdata):
         object_name = userdata.object_name
@@ -48,7 +48,7 @@ class ClosingState(smach.State):
         
         # Публикуем feedback
         feedback_msg = PickupObject.Feedback()
-        feedback_msg.current_state = '[3/8] APPROACHING_OBJECT'
+        feedback_msg.current_state = '[3/9] APPROACHING_OBJECT'
         feedback_msg.status_message = f'Сближение с объектом {object_name}...'
         feedback_msg.current_x = self.node.current_position['x']
         feedback_msg.current_y = self.node.current_position['y']
