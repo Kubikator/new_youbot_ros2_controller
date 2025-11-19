@@ -43,8 +43,8 @@ WorldInfo {
   ]
 }
 Viewpoint {
-  orientation 0.1571491684755475 0.9656296981006998 -0.2070348400472621 1.090511337071084
-  position -0.9790811601061837 0.5500973679823489 2.069859447400258
+  orientation 0.32727820919890666 -0.21542593892660755 -0.9200438242937921 4.446343550908356
+  position -3.919460158667589 1.3203490481104843 1.6944397202597328
   follow "youBot"
 }
 TexturedBackground {
@@ -54,15 +54,66 @@ TexturedBackgroundLight {
 Floor {
   size 100 100
 }
+Solid {
+  translation -4.92 -1.04 0.23
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 1 0
+        roughness 0.7
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.04
+        radius 0.02
+      }
+    }
+  ]
+  name "grippable_green_cylinder"
+  boundingObject Cylinder {
+    height 0.04
+    radius 0.02
+  }
+  physics Physics {
+    density -1
+    mass 0.1
+  }
+}
+Solid {
+  translation -1.02 -1.12 0.15
+  children [
+    Shape {
+      appearance PBRAppearance {
+        baseColor 0 0 1
+        roughness 0.7
+        metalness 0
+      }
+      geometry Cylinder {
+        height 0.04
+        radius 0.02
+      }
+    }
+  ]
+  name "grippable_blue_cylinder"
+  boundingObject Cylinder {
+    height 0.04
+    radius 0.02
+  }
+  physics Physics {
+    density -1
+    mass 0.1
+  }
+}
 Apple {
-  translation 6.86 4.58 0.12
+  translation -8.10223 2.72 0.237054
+  rotation 0 1 0 -0.05311530717958579
   scale 0.4
 }
 WoodenBox {
-  translation 0.01545 1.46122 0
+  translation -1.02455 -1.12878 0.02
   rotation 0 0 1 -1.5707963267948966
   name "wooden box(1)"
-  size 0.6 0.6 0.2
+  size 0.2 0.2 0.2
 }
 Wall {
   translation 1.58 2.38 0
@@ -81,24 +132,18 @@ Wall {
   size 0.1 2.5 1
 }
 Wall {
-  translation -3.36 -5.24 0
-  rotation 0 0 1 1.5708
-  name "wall(8)"
-  size 0.1 5 1
-}
-Wall {
-  translation -5.05 1.27 0
+  translation -5.54 1.27 0
   rotation 0 0 1 1.5708
   name "wall(10)"
-  size 0.1 5 1
+  size 0.1 4 1
 }
 Wall {
-  translation -0.89 -7.47 0
+  translation -2.79 -7.47 0
   name "wall(5)"
   size 0.1 4.5 1
 }
 Wall {
-  translation -3.41 -2.99 0
+  translation -2.78 -2.99 0
   name "wall(9)"
   size 0.1 4.5 1
 }
@@ -120,13 +165,13 @@ Wall {
   size 0.1 5 1
 }
 Wall {
-  translation -0.05605 -9.74599 0
+  translation -0.0508728 -3.24599 0
   rotation 0 0 1 1.57
   name "wall(3)"
   size 0.1 15 1
 }
 Wall {
-  translation 7.49395 -2.26594 0
+  translation 0.53395 -2.26594 0
   name "wall(2)"
   size 0.1 15 1
 }
@@ -136,25 +181,35 @@ Wall {
   size 0.1 15 1
 }
 WoodenBox {
-  translation 7.09545 -4.98878 0
+  translation -4.23455 3.41122 0.05
   rotation 0 0 1 -1.5707963267948966
-  size 0.6 0.6 0.2
+  size 0.2 0.2 0.2
 }
 WoodenBox {
-  translation 7.11545 4.84122 0
-  rotation 0 0 1 -1.5707963267948966
-  name "wooden box(2)"
-  size 0.6 0.6 0.2
-}
-WoodenBox {
-  translation -7.11455 4.96122 0.1
+  translation -4.94455 -1.04878 0.11
   rotation 0 0 1 -1.5707963267948966
   name "wooden box(3)"
-  size 0.6 0.6 0.2
+  size 0.2 0.2 0.2
 }
 Youbot {
-  translation 0 0 0.101594
-  rotation -0.01910501367574832 0.9998174825639843 3.4447974017753594e-06 0.002110345492983813
+  hidden position_0_0 9.87405380155929e-10
+  hidden position_0_1 -9.867516437321339e-10
+  hidden position_0_2 -1.0289735385482745e-09
+  hidden position_0_3 1.028549352054545e-09
+  hidden linearVelocity_0 -3.9494846003752705e-09 1.8011448112335186e-08 1.3386100414508275e-10
+  hidden angularVelocity_0 -2.6357769821811866e-07 -5.538799954522709e-08 2.116175288508593e-09
+  hidden position_8_0 -1.1569558449076452e-06
+  hidden rotation_9 0 0 -1 1.1569290723670686e-06
+  hidden position_9_0 -1.0695453911242154e-07
+  hidden rotation_10 0 1 0 1.0745380149674385e-07
+  hidden position_10_0 1.666408691714874e-07
+  hidden rotation_11 0 -1 0 1.6593230851978133e-07
+  hidden position_11_0 -1.3645069149254593e-09
+  hidden position_12_0 2.9751406883379163e-10
+  hidden position_13_0 1.1937447798237388e-11
+  hidden position_13_1 -1.1935329743014712e-11
+  translation -3.825566209300635e-11 -3.5824804640785846e-11 0.1019377173645768
+  rotation -0.01910504874216224 0.9998174818938893 3.4528666650256953e-06 0.002110345159049243
   name "my_robot"
   controller "<extern>"
   controllerArgs [
@@ -178,7 +233,7 @@ Youbot {
     }
     Lidar {
       translation 0.28 0 0
-      fieldOfView 3.14
+      fieldOfView 3.9
       numberOfLayers 1
       maxRange 20
     }
@@ -199,7 +254,8 @@ Wall {
   size 0.1 15 1
 }
 DEF YellowCube Solid {
-  translation 0.01 1.22 0.125
+  translation -1.02 -3.89 0.139998
+  rotation 0.9941642673281966 0.10770112896055649 0.006154379612249561 3.140831308642716e-16
   children [
     Shape {
       appearance PBRAppearance {
@@ -225,7 +281,7 @@ DEF YellowCube Solid {
   ]
 }
 Ball {
-  translation 0.21 1.54 0.1225
+  translation -3.47 -5.01 0.019957
   color 0.3 0.48 1
   radius 0.02
 }

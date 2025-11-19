@@ -49,7 +49,7 @@ class CloseGripperState(smach.State):
         
         # Получаем текущее время
         start_time = self.node.get_clock().now()
-        delay_duration = Duration(seconds=1)
+        delay_duration = Duration(seconds=2)
         
         # Цикл ожидания
         while (self.node.get_clock().now() - start_time) < delay_duration:

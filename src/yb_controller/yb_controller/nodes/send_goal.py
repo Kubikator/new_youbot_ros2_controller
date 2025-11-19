@@ -18,7 +18,7 @@ class GoalSender(Node):
         """
         Отправить цель навигации
         x, y - координаты в метрах
-        yaw - угол поворота в радианах (0 = на восток, pi/2 = на север)
+        yaw - угол поворота в радианах 
         """
         self.get_logger().info(f'Waiting for action server...')
         self.nav_to_pose_client.wait_for_server()

@@ -7,6 +7,7 @@ import numpy as np
 from yb_interfaces.action import PickupObject
 from yb_interfaces.msg import BoundingBoxArray
 from rclpy.action import ActionServer
+from rclpy.duration import Duration
 import math
 import smach
 import smach_ros
@@ -102,6 +103,14 @@ class MovingPreGrapState(smach.State):
 
         if distance < self.node.POSITION_TOLERANCE:
             self.node.get_logger().info(f'✓ Манипулятор достиг целевой позиции (расстояние: {distance:.3f}м)')
+            # Получаем текущее время
+            start_time = self.node.get_clock().now()
+            delay_duration = Duration(seconds=1)
+            
+            # Цикл ожидания
+            while (self.node.get_clock().now() - start_time) < delay_duration:
+                rclpy.spin_once(self.node, timeout_sec=0.1)
+            return 'reached'
             return 'reached'
         else:
             self.node.get_logger().info(f' Манипулятор в процессе движения (цель: {target_x:.3f}, {target_y:.3f}, {target_z:.3f}) \n'

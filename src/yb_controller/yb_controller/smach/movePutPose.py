@@ -7,13 +7,11 @@ import numpy as np
 from yb_interfaces.action import PickupObject
 from yb_interfaces.msg import BoundingBoxArray
 from rclpy.action import ActionServer
-from rclpy.duration import Duration
 import math
 import smach
 import smach_ros
 
-class MovingGripperState(smach.State):
-    """Состояние: движение к объекту"""
+class MovingPutPoseState(smach.State):
     
     def __init__(self, node):
         smach.State.__init__(
@@ -34,46 +32,21 @@ class MovingGripperState(smach.State):
         
         # Публикуем feedback
         feedback_msg = PickupObject.Feedback()
-        feedback_msg.current_state = '[6/9] MOVING_TO_TARGET'
-        feedback_msg.status_message = f'Движение манипулятора к объекту {object_name}...'
+        feedback_msg.current_state = '[5/9] MOVING_TO_PUT_POSE'
+        feedback_msg.status_message = f'Движение манипулятора к точке поклажки {object_name}...'
         feedback_msg.current_x = self.node.current_position['x']
         feedback_msg.current_y = self.node.current_position['y']
         feedback_msg.current_z = self.node.current_position['z']
         self.node.goal_handle.publish_feedback(feedback_msg)
-        
-        # Получаем координаты объекта из detected_objects
-        object_found = False
-        obj_x_base = 0.0
-        obj_y_base = 0.0
-        obj_z_base = 0.0
-
-        # Останавливаемся здесь на 2 секунды для того, чтобы старые данные о расстоянии успели замениться новыми
-        rclpy.spin_once(self.node, timeout_sec=2)
-        
-        for center in self.node.objects_centers:
-            if center.class_name.lower() == object_name.lower():
-                obj_x_base = center.center.x
-                obj_y_base = center.center.y
-                obj_z_base = center.center.z
-                object_found = True
-                break
-        
-        if not object_found:
-            if not self._coords_warning_shown:
-                self.node.get_logger().warn('⚠ Объект не обнаружен в detected_objects')
-                self._coords_warning_shown = True
-            rclpy.spin_once(self.node, timeout_sec=0.1)
-            return 'moving'
-        
-        # Трансформируем из base_link в arm_link
-        obj_x_arm = obj_x_base - self.node.ARM_LINK_OFFSET['x']
-        obj_y_arm = obj_y_base - self.node.ARM_LINK_OFFSET['y']
-        obj_z_arm = obj_z_base - self.node.ARM_LINK_OFFSET['z']
+                
+        obj_x_arm = self.node.put_pose_x
+        obj_y_arm = self.node.put_pose_y
+        obj_z_arm = self.node.put_pose_z
         
         # Вычисляем целевую позицию
         target_x = obj_x_arm
         target_y = obj_y_arm
-        target_z = obj_z_arm * 1.05
+        target_z = obj_z_arm
         
         self.node.get_logger().info(
             f'Целевая позиция манипулятора: '
@@ -104,13 +77,6 @@ class MovingGripperState(smach.State):
 
         if distance < self.node.POSITION_TOLERANCE:
             self.node.get_logger().info(f'✓ Манипулятор достиг целевой позиции (расстояние: {distance:.3f}м)')
-            # Получаем текущее время
-            start_time = self.node.get_clock().now()
-            delay_duration = Duration(seconds=1)
-            
-            # Цикл ожидания
-            while (self.node.get_clock().now() - start_time) < delay_duration:
-                rclpy.spin_once(self.node, timeout_sec=0.1)
             return 'reached'
         else:
             self.node.get_logger().info(f' Манипулятор в процессе движения (цель: {target_x:.3f}, {target_y:.3f}, {target_z:.3f}) \n'

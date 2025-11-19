@@ -7,12 +7,15 @@ from geometry_msgs.msg import Pose, Point
 from sensor_msgs.msg import JointState
 import numpy as np
 from yb_interfaces.action import PickupObject
-from yb_interfaces.msg import BoundingBoxArray, ObjectCenter3Array
+from yb_interfaces.msg import BoundingBoxArray, ObjectCenter3Array, LocalizedObjectArray
 from rclpy.action import ActionServer
+from rclpy.action import ActionClient
+from nav2_msgs.action import NavigateToPose
 import math
 import smach
 import smach_ros
 from geometry_msgs.msg import Pose, Point, Twist
+from yb_controller.smach.navigate_to_goal_state import NavigateToGoalState
 from yb_controller.smach.searching_state import SearchObjectState
 from yb_controller.smach.align_state import AlignToObjectState
 from yb_controller.smach.closing_state import ClosingState
@@ -22,6 +25,9 @@ from yb_controller.smach.moveGripper_state import MovingGripperState
 from yb_controller.smach.closeGripper_state import CloseGripperState
 from yb_controller.smach.LiftObject_state import LiftObjectState
 from yb_controller.smach.verifyGrasp_state import VerifyGraspState
+from yb_controller.smach.navigate_to_home_state import NavigateToHomeState
+from yb_controller.smach.movePutPose import MovingPutPoseState
+from yb_controller.actions.navigation_manager import NavigationManager
 
 class PickupActionNode(Node):
     """Главная нода для управления действием захвата объекта"""
@@ -30,6 +36,8 @@ class PickupActionNode(Node):
         super().__init__('pickup_action_server')
 
         self.goal_handle = None
+
+        self.nav_manager = NavigationManager(self)
 
         self._action_server = ActionServer(
             self,
@@ -56,6 +64,13 @@ class PickupActionNode(Node):
             BoundingBoxArray,
             '/camera/detected_objects',
             self.detected_objects_callback,
+            10
+        )
+
+        self.localized_objects_subscriber = self.create_subscription(
+            LocalizedObjectArray,
+            '/localized_objects_map',
+            self.localized_objects_callback,
             10
         )
 
@@ -87,7 +102,7 @@ class PickupActionNode(Node):
 
         self.GRIPPER_OPEN_GAP = 0.071
         self.GRIPPER_CLOSED_GAP = 0.0
-        self.POSITION_TOLERANCE = 0.02
+        self.POSITION_TOLERANCE = 0.05
         self.GRIPPER_TOLERANCE = 0.005
         self.SEARCH_ANGULAR_VELOCITY = 0.3  # рад/с для поиска объекта
         self.ALIGN_ANGULAR_VELOCITY = 0.1  # рад/с для выравнивания
@@ -105,7 +120,14 @@ class PickupActionNode(Node):
         self.current_position = {'x': 0.0, 'y': 0.0, 'z': 0.0}
         self.current_gripper_gap = 0.0
         self.detected_objects = []
+        self.localized_objects = []
         self.objects_centers = []
+        self.home_x = -3.7
+        self.home_y = 3.45
+        self.home_yaw = 3.14
+        self.put_pose_x = 0.396
+        self.put_pose_y = -0.008
+        self.put_pose_z = 0.198
         
         self.get_logger().info('Pickup Object Action Server запущен')
     
@@ -122,6 +144,17 @@ class PickupActionNode(Node):
         
         # Определяем состояния
         with sm:
+            smach.StateMachine.add(
+                'NAVIGATE_TO_OBJECT', 
+                NavigateToGoalState(self, self.nav_manager),
+                transitions={
+                    'navigated': 'SEARCHING_OBJECT',
+                    'no_object': 'failure',
+                    'aborted': 'failure',
+                    'preempted': 'preempted'
+                }
+            )
+            
             smach.StateMachine.add(
                 'SEARCHING_OBJECT',
                 SearchObjectState(self),
@@ -217,8 +250,40 @@ class PickupActionNode(Node):
                 'VERIFY_GRASP',
                 VerifyGraspState(self),
                 transitions={
-                    'grasped': 'success',
+                    'grasped': 'NAVIGATE_TO_HOME',
                     'not_grasped': 'OPENING_GRIPPER',
+                    'preempted': 'preempted'
+                }
+            )
+
+            smach.StateMachine.add(
+                'NAVIGATE_TO_HOME',
+                NavigateToHomeState(self, self.nav_manager),
+                transitions={
+                    'navigated': 'MOVING_TO_PUT_POSE',
+                    'aborted': 'failure',
+                    'preempted': 'preempted'
+                }
+            )
+
+            smach.StateMachine.add(
+                'MOVING_TO_PUT_POSE',
+                MovingPutPoseState(self),
+                transitions={
+                    'reached': 'OPENING_GRIPPER_FINISH',
+                    'moving': 'MOVING_TO_PUT_POSE',
+                    'failure': 'failure',
+                    'preempted': 'preempted'
+                }
+            )
+
+            smach.StateMachine.add(
+                'OPENING_GRIPPER_FINISH',
+                OpenGripperState(self),
+                transitions={
+                    'opened': 'success',
+                    'waiting': 'OPENING_GRIPPER_FINISH',
+                    'failure': 'failure',
                     'preempted': 'preempted'
                 }
             )
@@ -257,6 +322,9 @@ class PickupActionNode(Node):
     def detected_objects_callback(self, msg: BoundingBoxArray):
         """Callback для обнаруженных объектов"""
         self.detected_objects = msg.boxes
+
+    def localized_objects_callback(self, msg: LocalizedObjectArray):
+        self.localized_objects = msg.objects
 
     def determined_objects_callback(self, msg: ObjectCenter3Array):
         """Callback для центров объектов"""
