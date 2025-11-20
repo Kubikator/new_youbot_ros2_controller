@@ -20,6 +20,7 @@ setup(
         ('share/' + package_name + '/rviz', glob('rviz/*.rviz')),
         ('share/' + package_name + '/maps', glob('maps/*')),
         ('share/' + package_name + '/models', glob('models/*')),
+        ('share/' + package_name + '/ui', glob('ui/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -43,6 +44,7 @@ setup(
             'smach_node = yb_controller.smach.smach_node:main',
             'send_goal = yb_controller.nodes.send_goal:main',
             'objects_finder = yb_controller.detection.objects_localizator_node:main',
+            'gui_controller = yb_controller.gui.gui_controller:main',
         ],
     },
 )

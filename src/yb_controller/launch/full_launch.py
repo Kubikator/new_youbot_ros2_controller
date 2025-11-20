@@ -128,6 +128,21 @@ def generate_launch_description():
         ]
     )
 
+    gui_controller = TimerAction(
+        period=5.0,
+        actions=[
+            Node(
+                package='yb_controller',
+                executable='gui_controller',
+                name='gui_controller',
+                output='screen',
+                parameters=[
+                    {'use_sim_time': True}
+                ]
+            )
+        ]
+    )
+
     return LaunchDescription([
         # Сразу запускаем
         robot_launch,
@@ -140,4 +155,5 @@ def generate_launch_description():
         coordinate_finder_node,
         objects_localizator,
         pickinkObject,
+        gui_controller
     ])
