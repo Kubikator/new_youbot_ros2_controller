@@ -128,7 +128,7 @@ class ClosingState(smach.State):
             self._consecutive_success_frames = 0
             
             # Проверка на потерю выравнивания (координата Y в mnp_link)
-            if abs(obj_y_mnp) > 0.1:
+            if abs(obj_y_mnp) > 0.2:
                 self.node.get_logger().warn(
                     f'⚠ Потеряно выравнивание! Y={obj_y_mnp:.3f}м'
                 )

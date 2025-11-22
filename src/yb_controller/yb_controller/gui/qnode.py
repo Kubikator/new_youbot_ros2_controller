@@ -7,7 +7,7 @@ import threading
 from PyQt5 import QtWidgets, uic
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from geometry_msgs.msg import Point
 from rclpy.action import ActionClient
 from yb_interfaces.action import PickupObject
@@ -44,10 +44,18 @@ class QNode(Node):
             10
         )
 
+        self.explore_success_subscriber = self.create_subscription(
+            Bool,
+            '/map_exploration_status',
+            self.explore_success_callback,
+            10
+        )
+
         self.bridge = CvBridge()
         self.pickup_action_client = ActionClient(self, PickupObject, '/pickup_object')
 
         self.detected_objects = []
+        self.explore_success = False
         self.curr_image = QImage()
         self.curr_image_1 = QImage()
 
@@ -124,3 +132,7 @@ class QNode(Node):
             
         except Exception as e:
             self.get_logger().error(f"Error processing image: {e}")
+
+    def explore_success_callback(self, msg):
+        
+        self.explore_success = msg.data

@@ -98,6 +98,21 @@ def generate_launch_description():
         ]
     )
 
+    exploration_status_node = TimerAction(
+        period=3.0,
+        actions=[
+            Node(
+                package='yb_controller',
+                executable='explore_status_monitor',
+                name='explore_status_monitor',
+                output='screen',
+                parameters=[
+                    {'use_sim_time': True}
+                ]
+            )
+        ]
+    )
+
     objects_localizator = TimerAction(
         period=4.0,
         actions=[
@@ -153,6 +168,7 @@ def generate_launch_description():
         detection_node,
         detection_1_node,
         coordinate_finder_node,
+        exploration_status_node,
         objects_localizator,
         pickinkObject,
         gui_controller

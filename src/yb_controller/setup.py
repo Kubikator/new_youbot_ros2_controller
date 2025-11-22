@@ -45,6 +45,7 @@ setup(
             'send_goal = yb_controller.nodes.send_goal:main',
             'objects_finder = yb_controller.detection.objects_localizator_node:main',
             'gui_controller = yb_controller.gui.gui_controller:main',
+            'explore_status_monitor = yb_controller.nodes.explore_status_monitor:main'
         ],
     },
 )

@@ -79,6 +79,8 @@ class MainWindow(QtWidgets.QMainWindow):
         pixmap_1 = QPixmap.fromImage(self.ros_node.curr_image_1)
         self.label_1.setPixmap(pixmap_1)
 
+        self.b_grasping.setEnabled(self.ros_node.explore_success)
+
     def ros_spin(self):
         """Цикл обработки ROS2 сообщений в отдельном потоке"""
         while rclpy.ok():
